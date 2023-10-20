@@ -8,17 +8,66 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  name  String
-  email String   @unique
-  role Roles @default(USER)
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  role      Roles    @default(user)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  quiz      Quiz[]
 }
 
 enum Roles {
-  ADMIN
-  USER
-  GOD
+  admin
+  user
+  god
 }
 
+// add one to many here
+
+model Quiz {
+  id          Int           @id @default(autoincrement())
+  author      User          @relation(fields: [authorId], references: [id])
+  authorId    Int
+  heading     String
+  description String?
+  multimedia  String?
+  type        quizType
+  optionText  optionText?
+  optionMCQ   optionMCQ?
+  submissions Summissions[]
+  createdAt   DateTime      @default(now())
+}
+
+enum quizType {
+  mcq
+  text
+}
+
+model optionText {
+  id        Int      @id @default(autoincrement())
+  text      String
+  quizId    Int      @unique
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model optionMCQ {
+  id        Int      @id @default(autoincrement())
+  a         String
+  b         String
+  c         String
+  d         String
+  mcqId     Int      @unique
+  quiz      Quiz     @relation(fields: [mcqId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Summissions {
+  id        Int      @id @default(autoincrement())
+  user      Int
+  answer    String?
+  Quiz      Quiz?    @relation(fields: [quizId], references: [id])
+  quizId    Int?
+  createdAt DateTime @default(now())
+}
