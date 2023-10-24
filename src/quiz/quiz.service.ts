@@ -1,5 +1,5 @@
-import { ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Prisma, User, optionMCQ, optionText } from '@prisma/client';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { Prisma, User, optionMCQ, optionText, Summissions } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/CreateUser.dto';
 import { Roles } from './enum/Roles.enum';
@@ -107,7 +107,7 @@ export class QuizService {
             });
 
         } else {
-            throw new ConflictException('Invalid Request Object');
+            throw new BadRequestException('Invalid Request Object');
         }
     }
 
@@ -141,4 +141,25 @@ export class QuizService {
         });
     }
 
+    async answerQuiz(answer): Promise<Summissions> {
+        try {
+            return await this.prisma.summissions.create({
+                data: {
+                    answer: answer.submission,
+                    Quiz: {
+                        connect: {
+                            id: answer.quizId
+                        }
+                    },
+                    user: {
+                        connect: {
+                            id: answer.userId
+                        }
+                    }
+                }
+            })
+        } catch (err) {
+            throw new BadRequestException('Invalid Request Object');
+        }
+    }
 }

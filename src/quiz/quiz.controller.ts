@@ -18,6 +18,11 @@ export class QuizController {
         return this.quizeService.createQuiz(data);
     }
 
+    @Post('answer')
+    async answer(@Body() data: any) {
+        return this.quizeService.answerQuiz(data);
+    }
+
     @Get('test')
     test() {
         return "testing";
