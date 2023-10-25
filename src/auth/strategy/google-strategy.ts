@@ -11,9 +11,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     ) {
         super(
             {
-                // clientID: '314440402383-skra4tkbcr8npdcvm5m3qbv5mv217lc8.apps.googleusercontent.com',
-                // clientSecret: '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' ,
-                // callbackURL: 'http://localhost:3000/api/v1/auth/google/redirect',
                 clientID: configService.get<string>('Google.clientId'),
                 clientSecret: configService.get<string>('Google.clientSecret'),
                 callbackURL: configService.get<string>('Google.callbackURL'),
