@@ -1,60 +1,17 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
-import { Prisma, User, optionMCQ, optionText, Summissions } from '@prisma/client';
+import { User, optionMCQ, optionText, Summissions } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateUserDto } from './dto/CreateUser.dto';
-import { Roles } from './enum/Roles.enum';
+import { UserService } from 'src/user/user.service';
 
 
 @Injectable()
 export class QuizService {
-    constructor(private prisma: PrismaService) { }
-
-    async createUser(data: CreateUserDto): Promise<User> {
-        const { name, email } = data;
-
-        if (!name || !email) {
-            throw new ConflictException('Name and email are required fields.');
-        }
-
-        const role = Roles.user;
-
-        try {
-            const prismaCreateInput: Prisma.UserCreateInput = {
-                name,
-                email,
-                role: role as Roles,
-            };
-
-            return await this.prisma.user.create({
-                data: prismaCreateInput,
-            });
-
-        } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                if (error.code === 'P2002') {
-                    throw new ConflictException('Email already exists.');
-                }
-                throw new ConflictException('Error');
-            }
-        }
-    }
-
-    async getUserByEmail(email: string): Promise<User | null> {
-        const user = await this.prisma.user.findUnique({
-            where: {
-                email: email,
-            },
-        });
-        if (!user) {
-            throw new ConflictException(`User with email ${email} not found.`);
-        }
-        return user;
-    }
+    constructor(private prisma: PrismaService, private userService: UserService) { }
 
     async createQuiz(data: any): Promise<object> {
         const { heading, description, type, mcqOptions, textOption, email } = data;
 
-        const user = await this.getUserByEmail(email);
+        const user = await this.userService.getUserByEmail(email);
 
         const quize = await this.prisma.quiz.create({
             data: {
