@@ -14,6 +14,7 @@ export class QuizService {
         const { heading, description, type, mcqOptions, textOption, email } = data;
 
         const user = await this.userService.getUserByEmail(email);
+        console.log(user);
 
         const quize = await this.prisma.quiz.create({
             data: {
@@ -118,12 +119,32 @@ export class QuizService {
                 }
             })
         } catch (err) {
+            console.log(err)
             throw new BadRequestException('Invalid Request Object');
         }
     }
 
     async correct(data: correctDto): Promise<Summissions> {
         try {
+            if (data.status == true) {
+                const submission = await this.prisma.summissions.findUnique({
+                    where: {
+                        id: data.id
+                    }
+                })
+
+                console.log(submission)
+
+                await this.prisma.user.update({
+                    where: {
+                        id: submission.userId
+                    },
+                    data: {
+                        score: { increment: 1}
+                    }
+                })
+            }
+
             return await this.prisma.summissions.update({
                 where: {
                     id: data.id,
@@ -132,9 +153,10 @@ export class QuizService {
                     status: data.status
                 },
             });
-            
+
 
         } catch (err) {
+            console.log(err);
             throw new BadRequestException('Invalid Request Object')
         }
     }

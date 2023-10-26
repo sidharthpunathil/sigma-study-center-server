@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class UserService {
 
-    constructor(private readonly prisma: PrismaService){}
+    constructor(private readonly prisma: PrismaService) { }
 
     async findUserById(id: string) {
         const user = await this.prisma.user.findUnique({
@@ -61,6 +61,21 @@ export class UserService {
                 }
                 throw new ConflictException('Error');
             }
+        }
+    }
+
+    async score(data: any): Promise<object> {
+        try {
+
+            const user = await this.prisma.user.findUnique({
+                where: {
+                    id: data.id
+                }
+            })
+            return { "score": user.score }
+
+        } catch (err) {
+            throw new ConflictException("Error getting the score");
         }
     }
 
