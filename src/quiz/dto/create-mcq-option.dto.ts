@@ -1,4 +1,4 @@
-export class CreateMcqOptionDto {
+export class createMcqOptionDto {
     a: string;
     b: string;
     c: string;

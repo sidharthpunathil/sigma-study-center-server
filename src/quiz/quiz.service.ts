@@ -2,6 +2,8 @@ import { BadRequestException, ConflictException, Injectable } from '@nestjs/comm
 import { User, optionMCQ, optionText, Summissions } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
+import { correctDto } from './dto/correct.dto';
+import { answerQuizDto } from './dto/answer-quiz.dto';
 
 
 @Injectable()
@@ -69,7 +71,7 @@ export class QuizService {
     }
 
 
-    async createMCQOption(mcqOptions: any, quizId: number): Promise<optionMCQ> {
+    async createMCQOption(mcqOptions: any, quizId: string): Promise<optionMCQ> {
         return this.prisma.optionMCQ.create({
             data: {
                 a: mcqOptions.a,
@@ -85,7 +87,7 @@ export class QuizService {
         });
     }
 
-    async createTextOption(textOption: any, quizId: number): Promise<optionText> {
+    async createTextOption(textOption: any, quizId: string): Promise<optionText> {
         return this.prisma.optionText.create({
             data: {
                 text: textOption.text,
@@ -98,11 +100,11 @@ export class QuizService {
         });
     }
 
-    async answerQuiz(answer): Promise<Summissions> {
+    async answerQuiz(answer: answerQuizDto): Promise<Summissions> {
         try {
             return await this.prisma.summissions.create({
                 data: {
-                    answer: answer.submission,
+                    answer: answer.answer,
                     Quiz: {
                         connect: {
                             id: answer.quizId
@@ -117,6 +119,23 @@ export class QuizService {
             })
         } catch (err) {
             throw new BadRequestException('Invalid Request Object');
+        }
+    }
+
+    async correct(data: correctDto): Promise<Summissions> {
+        try {
+            return await this.prisma.summissions.update({
+                where: {
+                    id: data.id,
+                },
+                data: {
+                    status: data.status
+                },
+            });
+            
+
+        } catch (err) {
+            throw new BadRequestException('Invalid Request Object')
         }
     }
 }

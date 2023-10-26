@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id          Int           @id @default(autoincrement())
+  id          String        @id @default(cuid()) @map("_id")
   name        String
   email       String        @unique
   role        Roles         @default(user)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   quiz        Quiz[]
+  score       Int?          @default(0)
   Summissions Summissions[]
 }
 
@@ -27,9 +28,9 @@ enum Roles {
 // add one to many here
 
 model Quiz {
-  id          Int           @id @default(autoincrement())
+  id          String        @id @default(cuid()) @map("_id")
   author      User          @relation(fields: [authorId], references: [id])
-  authorId    Int          
+  authorId    String
   heading     String
   description String?
   multimedia  String?
@@ -46,30 +47,31 @@ enum quizType {
 }
 
 model optionText {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid()) @map("_id")
   text      String
-  quizId    Int      @unique
+  quizId    String   @unique
   quiz      Quiz     @relation(fields: [quizId], references: [id])
   createdAt DateTime @default(now())
 }
 
 model optionMCQ {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid()) @map("_id")
   a         String
   b         String
   c         String
   d         String
-  mcqId     Int      @unique
+  mcqId     String   @unique
   quiz      Quiz     @relation(fields: [mcqId], references: [id])
   createdAt DateTime @default(now())
 }
 
 model Summissions {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid()) @map("_id")
   user      User     @relation(fields: [userId], references: [id])
-  userId    Int
+  userId    String
   answer    String
   Quiz      Quiz?    @relation(fields: [quizId], references: [id])
-  quizId    Int      
+  quizId    String
+  status    Boolean?
   createdAt DateTime @default(now())
 }

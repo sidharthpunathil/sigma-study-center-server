@@ -1,5 +1,7 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { QuizService } from './quiz.service';
+import { correctDto } from './dto/correct.dto';
+import { answerQuizDto } from './dto/answer-quiz.dto';
 
 @Controller('quiz')
 export class QuizController {
@@ -12,8 +14,13 @@ export class QuizController {
     }
 
     @Post('answer')
-    async answer(@Body() data: any) {
+    async answer(@Body() data: answerQuizDto) {
         return this.quizeService.answerQuiz(data);
+    }
+
+    @Post('correct')
+    async correct(@Body() data: correctDto) {
+        return this.quizeService.correct(data);
     }
 
 }

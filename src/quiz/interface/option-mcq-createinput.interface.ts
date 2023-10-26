@@ -1,7 +1,7 @@
-export type OptionMCQCreateInput = {
+export type optionMcqCreateInput = {
     a: string;
     b: string;
     c: string;
     d: string;
-    mcqId: number;
+    mcqId: string;
   };
