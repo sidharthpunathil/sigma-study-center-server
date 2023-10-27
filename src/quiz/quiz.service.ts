@@ -174,4 +174,33 @@ export class QuizService {
             throw new BadRequestException('Invalid Request Object')
         }
     }
+
+    async getAllQuizes(take: number, skip: number) {
+        try {
+            return await this.prisma.quiz.findMany({
+                skip: +skip,
+                take: +take,
+            })
+
+        } catch (err) {
+            console.log(err);
+            throw new BadRequestException('Invalid Request Object')
+        }
+    }
+
+    async toppers(data: any) {
+        try {
+
+            const topUsers = await this.prisma.user.findMany({
+                orderBy: {
+                    score: 'desc', 
+                },
+                take: data.limit, 
+            });
+            return topUsers;
+
+        } catch (err) {
+            throw new BadRequestException('Invalid Request Object')
+        }
+    }
 }

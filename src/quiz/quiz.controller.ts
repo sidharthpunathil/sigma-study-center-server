@@ -8,6 +8,11 @@ export class QuizController {
     constructor(private readonly quizeService: QuizService){}
 
 
+    @Get('all')
+    async allQuizes(@Query("take") take: number, @Query("skip") skip: number ) {
+        return this.quizeService.getAllQuizes(take, skip);
+    }
+
     @Post('create')
     async createQuiz(@Body() data: any) {
         return this.quizeService.createQuiz(data);
@@ -26,6 +31,11 @@ export class QuizController {
     @Get('submissions/:id')
     async submissions(@Param('id') id: string, @Query("take") take: number, @Query("skip") skip: number ) {
         return this.quizeService.getAllSubmissions(id, take, skip);
+    }
+
+    @Get('toppers')
+    async toppers(@Body() data: any) {
+        return this.quizeService.toppers(data);
     }
 
 }
