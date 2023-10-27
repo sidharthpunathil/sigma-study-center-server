@@ -140,7 +140,7 @@ export class QuizService {
                         id: submission.userId
                     },
                     data: {
-                        score: { increment: 1}
+                        score: { increment: 1 }
                     }
                 })
             }
@@ -157,6 +157,20 @@ export class QuizService {
 
         } catch (err) {
             console.log(err);
+            throw new BadRequestException('Invalid Request Object')
+        }
+    }
+
+    async getAllSubmissions(id: string, take: number, skip: number) {
+        try {
+            return await this.prisma.summissions.findMany({
+                where: {
+                    quizId: id,
+                },
+                skip: +skip,
+                take: +take,
+            })
+        } catch (err) {
             throw new BadRequestException('Invalid Request Object')
         }
     }
