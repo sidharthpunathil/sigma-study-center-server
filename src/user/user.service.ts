@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma, Roles, User } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { changeUserNameDto } from './dto/change-username.dto';
 
 @Injectable()
 export class UserService {
@@ -76,6 +77,23 @@ export class UserService {
 
         } catch (err) {
             throw new ConflictException("Error getting the score");
+        }
+    }
+
+    async changeUserName(changeUserNameDto: changeUserNameDto): Promise<User> {
+        try {
+
+            return await this.prisma.user.update({
+                where: {
+                    id: changeUserNameDto.id
+                },
+                data: {
+                    name: changeUserNameDto.name
+                }
+            })
+
+        } catch (err) {
+            throw new ConflictException("Error changing username");
         }
     }
 
