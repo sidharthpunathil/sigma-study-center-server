@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Query, Param, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, Put, Delete } from '@nestjs/common';
 import { QuizService } from './quiz.service';
 import { correctDto } from './dto/correct.dto';
 import { answerQuizDto } from './dto/answer-quiz.dto';
 import { QuizDto } from './dto/create-quiz.dto';
+import { deleteQuizDto } from './dto/delete-quiz.dto';
 
 @Controller('quiz')
 export class QuizController {
@@ -42,5 +43,10 @@ export class QuizController {
     @Put('edit')
     async editQuiz(@Body() data: QuizDto) {
         return this.quizeService.editQuiz(data);
+    }
+
+    @Delete('delete')
+    async deleteQuiz(@Body() data: deleteQuizDto) {
+        return this.quizeService.deleteQuiz(data);
     }
 }

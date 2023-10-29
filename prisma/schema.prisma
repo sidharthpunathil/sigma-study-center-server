@@ -29,7 +29,7 @@ enum Roles {
 
 model Quiz {
   id          String        @id @default(cuid()) @map("_id")
-  author      User          @relation(fields: [authorId], references: [id])
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String
   heading     String
   description String?
@@ -50,7 +50,7 @@ model optionText {
   id        String   @id @default(cuid()) @map("_id")
   text      String
   quizId    String   @unique
-  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
 
@@ -61,16 +61,16 @@ model optionMCQ {
   c         String
   d         String
   mcqId     String   @unique
-  quiz      Quiz     @relation(fields: [mcqId], references: [id])
+  quiz      Quiz     @relation(fields: [mcqId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
 
 model Summissions {
   id        String   @id @default(cuid()) @map("_id")
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   answer    String
-  Quiz      Quiz?    @relation(fields: [quizId], references: [id])
+  Quiz      Quiz?    @relation(fields: [quizId], references: [id], onDelete: Cascade)
   quizId    String
   status    Boolean?
   createdAt DateTime @default(now())

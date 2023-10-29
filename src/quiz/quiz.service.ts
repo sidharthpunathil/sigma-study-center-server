@@ -5,6 +5,7 @@ import { UserService } from 'src/user/user.service';
 import { correctDto } from './dto/correct.dto';
 import { answerQuizDto } from './dto/answer-quiz.dto';
 import { QuizDto } from './dto/create-quiz.dto';
+import { deleteQuizDto } from './dto/delete-quiz.dto';
 
 
 @Injectable()
@@ -214,6 +215,19 @@ export class QuizService {
             });
         } catch (err) {
             throw new BadRequestException('Invalid Request Object')
+        }
+    }
+
+    async deleteQuiz(data: deleteQuizDto) {
+        try {
+            await this.prisma.quiz.delete({
+                where: { id: data.quizId },
+            });
+
+            return `quize ${data.quizId} deleted successfully!`
+        } catch (err) {
+            console.log(err)
+            throw new Error(`Failed to delete quiz with ID ${data.quizId}: ${err.message}`);
         }
     }
 }
