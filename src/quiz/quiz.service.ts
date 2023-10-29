@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { correctDto } from './dto/correct.dto';
 import { answerQuizDto } from './dto/answer-quiz.dto';
+import { QuizDto } from './dto/create-quiz.dto';
 
 
 @Injectable()
@@ -140,7 +141,7 @@ export class QuizService {
                         id: submission.userId
                     },
                     data: {
-                        score: { increment: 1 }
+                        score: { increment: 10 }
                     }
                 })
             }
@@ -193,12 +194,24 @@ export class QuizService {
 
             const topUsers = await this.prisma.user.findMany({
                 orderBy: {
-                    score: 'desc', 
+                    score: 'desc',
                 },
-                take: data.limit, 
+                take: data.limit,
             });
             return topUsers;
 
+        } catch (err) {
+            throw new BadRequestException('Invalid Request Object')
+        }
+    }
+
+    async editQuiz(data: QuizDto) {
+        try {
+            const { quizId, ...other } = data;
+            return await this.prisma.quiz.update({
+                where: { id: quizId },
+                data: other,
+            });
         } catch (err) {
             throw new BadRequestException('Invalid Request Object')
         }
