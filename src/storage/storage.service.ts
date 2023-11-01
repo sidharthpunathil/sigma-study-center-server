@@ -30,7 +30,7 @@ export class StorageService {
     }
 
 
-    async uploadFile(file: Express.Multer.File): Promise<string> {
+    async uploadFile(file: Express.Multer.File): Promise<FileReturnDto> {
         const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
 
         if (!allowedMimeTypes.includes(file.mimetype)) {
@@ -50,8 +50,7 @@ export class StorageService {
             await uploadBytesResumable(storageRef, file.buffer, metadata);
             const downloadURL = await getDownloadURL(storageRef);
             console.log('File uploaded successfully. Download URL:', downloadURL);
-            console.log('FileId', newId);
-            return newId;
+            return { 'id': newId, 'url': downloadURL} ;
         } catch (error) {
             console.log(error)
             throw new ServiceUnavailableException('File upload failed');

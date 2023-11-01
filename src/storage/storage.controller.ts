@@ -10,7 +10,7 @@ export class StorageController {
   // Returns the uploadFileId
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File): Promise<string> {
+  async uploadFile(@UploadedFile() file: Express.Multer.File): Promise<object> {
     return this.storageService.uploadFile(file);
   }
 

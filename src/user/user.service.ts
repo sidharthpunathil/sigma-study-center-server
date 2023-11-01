@@ -33,9 +33,6 @@ export class UserService {
     }
 
     async createUser(data: CreateUserDto): Promise<User> {
-
-        console.log("incoming data", data);
-
         const { name, email } = data;
 
         if (!name || !email) {

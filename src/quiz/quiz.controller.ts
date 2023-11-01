@@ -1,23 +1,27 @@
-import { Controller, Get, Post, Body, Query, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, Put, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { QuizService } from './quiz.service';
 import { correctDto } from './dto/correct.dto';
 import { answerQuizDto } from './dto/answer-quiz.dto';
-import { QuizDto } from './dto/create-quiz.dto';
+import { CreateQuizDto } from './dto/create-quiz.dto';
 import { deleteQuizDto } from './dto/delete-quiz.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { StorageService } from 'src/storage/storage.service';
+import { EditQuizDto } from './dto/edit-quiz.dto';
 
 @Controller('quiz')
 export class QuizController {
-    constructor(private readonly quizeService: QuizService) { }
+    constructor(private readonly quizeService: QuizService, private readonly storageService: StorageService) { }
 
 
     @Get('all')
     async allQuizes(@Query("take") take: number, @Query("skip") skip: number) {
-        return this.quizeService.getAllQuizes(take, skip);
+        return this.quizeService.getAllQuizs(take, skip);
     }
 
     @Post('create')
-    async createQuiz(@Body() data: any) {
-        return this.quizeService.createQuiz(data);
+    @UseInterceptors(FileInterceptor('file'))
+    async createQuiz(@UploadedFile('file') file: Express.Multer.File, @Body() data: CreateQuizDto) {
+        return this.quizeService.createQuiz(data, file);
     }
 
     @Post('answer')
@@ -41,8 +45,9 @@ export class QuizController {
     }
 
     @Put('edit')
-    async editQuiz(@Body() data: QuizDto) {
-        return this.quizeService.editQuiz(data);
+    @UseInterceptors(FileInterceptor('file'))
+    async editQuiz(@UploadedFile() file: Express.Multer.File, @Body() data: EditQuizDto): Promise<object> {
+        return await this.quizeService.editQuiz(data, file);
     }
 
     @Delete('delete')

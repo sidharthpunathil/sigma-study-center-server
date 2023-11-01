@@ -1,76 +1,91 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
-import { User, optionMCQ, optionText, Summissions } from '@prisma/client';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { optionMCQ, optionText, Summissions } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { correctDto } from './dto/correct.dto';
 import { answerQuizDto } from './dto/answer-quiz.dto';
-import { QuizDto } from './dto/create-quiz.dto';
 import { deleteQuizDto } from './dto/delete-quiz.dto';
-
+import { StorageService } from 'src/storage/storage.service';
+import { CreateQuizDto } from './dto/create-quiz.dto';
+import { EditQuizDto } from './dto/edit-quiz.dto';
 
 @Injectable()
 export class QuizService {
-    constructor(private prisma: PrismaService, private userService: UserService) { }
+    constructor(private prisma: PrismaService, private userService: UserService, private storageService: StorageService) { }
 
-    async createQuiz(data: any): Promise<object> {
-        const { heading, description, type, mcqOptions, textOption, email } = data;
+    async createQuiz(data: CreateQuizDto, file: Express.Multer.File): Promise<object> {
+        try {
+            const { heading, description, type, mcqOptions, textOption, email } = data;
 
-        const user = await this.userService.getUserByEmail(email);
-        console.log(user);
+            console.log("data", data);
+            
+            const user = await this.userService.getUserByEmail(email);
+            const fileId = await this.storageService.uploadFile(file)
 
-        const quize = await this.prisma.quiz.create({
-            data: {
-                author: {
-                    connect: {
-                        id: user.id,
-                    },
-                },
-                heading,
-                description,
-                type
-            },
-        });
+            console.log(user);
 
-        if (type === 'mcq' && mcqOptions && user) {
-            const createdMCQOption = await this.createMCQOption(mcqOptions, quize.id);
-            return await this.prisma.quiz.update({
-                where: {
-                    id: quize.id,
-                },
+            const quiz = await this.prisma.quiz.create({
+
                 data: {
-                    optionMCQ: {
+                    author: {
                         connect: {
-                            id: createdMCQOption.id,
+                            id: user.id,
                         },
                     },
-                },
-                include: {
-                    optionMCQ: true,
+                    heading,
+                    description,
+                    type,
+                    multimedia: fileId.url
                 },
             });
 
-        } else if (type == 'text' && textOption && user) {
-
-            const createdTextOption = await this.createTextOption(textOption, quize.id);
-            return await this.prisma.quiz.update({
-                where: {
-                    id: quize.id,
-                },
-                data: {
-                    optionText: {
-                        connect: {
-                            id: createdTextOption.id,
+            if (type === 'mcq' && mcqOptions && user) {
+                const createdMCQOption = await this.createMCQOption(mcqOptions, quiz.id);
+                return await this.prisma.quiz.update({
+                    where: {
+                        id: quiz.id,
+                    },
+                    data: {
+                        optionMCQ: {
+                            connect: {
+                                id: createdMCQOption.id,
+                            },
                         },
                     },
-                },
-                include: {
-                    optionText: true,
-                },
-            });
+                    include: {
+                        optionMCQ: true,
+                    },
+                });
 
-        } else {
+            } else if (type == 'text' && textOption && user) {
+
+                const createdTextOption = await this.createTextOption(textOption, quiz.id);
+                return await this.prisma.quiz.update({
+                    where: {
+                        id: quiz.id,
+                    },
+                    data: {
+                        optionText: {
+                            connect: {
+                                id: createdTextOption.id,
+                            },
+                        },
+                    },
+                    include: {
+                        optionText: true,
+                    },
+                });
+
+            } else {
+                throw new BadRequestException('Error');
+            }
+        }
+        catch (err) {
             throw new BadRequestException('Invalid Request Object');
         }
+
+
+
     }
 
 
@@ -177,7 +192,7 @@ export class QuizService {
         }
     }
 
-    async getAllQuizes(take: number, skip: number) {
+    async getAllQuizs(take: number, skip: number) {
         try {
             return await this.prisma.quiz.findMany({
                 skip: +skip,
@@ -206,15 +221,25 @@ export class QuizService {
         }
     }
 
-    async editQuiz(data: QuizDto) {
+    async editQuiz(data: EditQuizDto, file: Express.Multer.File): Promise<object> {
+        const {quizId, ...query} = data
+        if (file) {
+            const fileUpload = await this.storageService.uploadFile(file);
+            query.multimedia = fileUpload.url
+        }
         try {
-            const { quizId, ...other } = data;
+
             return await this.prisma.quiz.update({
-                where: { id: quizId },
-                data: other,
+                where: {
+                    id: quizId
+                },
+                data: query
             });
-        } catch (err) {
-            throw new BadRequestException('Invalid Request Object')
+        }
+
+        catch (err) {
+            console.log(err);
+            throw new BadRequestException('Invalid Request Object');
         }
     }
 
@@ -224,7 +249,7 @@ export class QuizService {
                 where: { id: data.quizId },
             });
 
-            return `quize ${data.quizId} deleted successfully!`
+            return `quiz ${data.quizId} deleted successfully!`
         } catch (err) {
             console.log(err)
             throw new Error(`Failed to delete quiz with ID ${data.quizId}: ${err.message}`);
