@@ -31,7 +31,7 @@ model Quiz {
   id          String        @id @default(cuid()) @map("_id")
   author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String
-  heading     String
+  heading     String?
   description String?
   multimedia  String?
   type        quizType

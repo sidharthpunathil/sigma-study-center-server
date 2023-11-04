@@ -1,5 +1,5 @@
 export class CreateQuizDto {
-  heading: string;
+  heading?: string;
   description: string;
   type: 'mcq' | 'text';
   mcqOptions?: {

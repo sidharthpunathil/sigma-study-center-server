@@ -17,29 +17,49 @@ export class QuizService {
         try {
             const { heading, description, type, mcqOptions, textOption, email } = data;
 
-            console.log("data", data);
-            
             const user = await this.userService.getUserByEmail(email);
-            const fileId = await this.storageService.uploadFile(file)
 
-            console.log(user);
+            let quiz;
 
-            const quiz = await this.prisma.quiz.create({
+            if (file) {
+                const fileId = file && await this.storageService.uploadFile(file)
+                quiz = await this.prisma.quiz.create({
 
-                data: {
-                    author: {
-                        connect: {
-                            id: user.id,
+                    data: {
+                        author: {
+                            connect: {
+                                id: user.id,
+                            },
                         },
+                        heading,
+                        description,
+                        type,
+                        multimedia: fileId.url
                     },
-                    heading,
-                    description,
-                    type,
-                    multimedia: fileId.url
-                },
-            });
+                });
+            } else {
+                quiz = await this.prisma.quiz.create({
+
+                    data: {
+                        author: {
+                            connect: {
+                                id: user.id,
+                            },
+                        },
+                        heading,
+                        description,
+                        type,
+                    },
+                });
+            }
+
+            console.log("the user", user);
+
 
             if (type === 'mcq' && mcqOptions && user) {
+
+                console.log("mcqq")
+
                 const createdMCQOption = await this.createMCQOption(mcqOptions, quiz.id);
                 return await this.prisma.quiz.update({
                     where: {
@@ -58,6 +78,8 @@ export class QuizService {
                 });
 
             } else if (type == 'text' && textOption && user) {
+
+                console.log("texteee")
 
                 const createdTextOption = await this.createTextOption(textOption, quiz.id);
                 return await this.prisma.quiz.update({
@@ -81,6 +103,7 @@ export class QuizService {
             }
         }
         catch (err) {
+            console.log(err)
             throw new BadRequestException('Invalid Request Object');
         }
 
@@ -222,7 +245,7 @@ export class QuizService {
     }
 
     async editQuiz(data: EditQuizDto, file: Express.Multer.File): Promise<object> {
-        const {quizId, ...query} = data
+        const { quizId, ...query } = data
         if (file) {
             const fileUpload = await this.storageService.uploadFile(file);
             query.multimedia = fileUpload.url
