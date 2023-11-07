@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Body, UseGuards, Req, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthenticationGuard } from './guards/Authentication.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { RolesGuard } from './guards/role.guard';
 import { Roles } from './enum/role.enum';
 import { CustomRoles } from './decorator/roles.decorator';
+import { AuthenticationGuard } from './guards/authendication.guard';
 
 
 @Controller('auth')
