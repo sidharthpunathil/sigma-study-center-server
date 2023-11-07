@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Put } from '@nestjs/common';
+import { Controller, Post, Body, Get, Put, Param } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,6 +11,11 @@ export class UserController {
     @Post('create')
     async createUser(@Body() data: CreateUserDto): Promise<User>{
         return this.userService.createUser(data);
+    }
+    
+    @Get(':id')
+    async getUserDetails(@Param('id') id: string): Promise<User> {
+        return this.userService.findUserById(id)
     }
 
     @Get('score')

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { optionMCQ, optionText, Summissions } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
@@ -143,6 +143,15 @@ export class QuizService {
 
     async answerQuiz(answer: answerQuizDto): Promise<Summissions> {
         try {
+
+            const submission = await this.prisma.summissions.findFirst({
+                where: { userId: answer.userId },
+            });
+
+            if (submission.quizId == answer.quizId) {
+                throw new HttpException('User already submitted the quiz!', HttpStatus.FORBIDDEN);
+            }
+            
             return await this.prisma.summissions.create({
                 data: {
                     answer: answer.answer,
@@ -159,8 +168,12 @@ export class QuizService {
                 }
             })
         } catch (err) {
-            console.log(err)
-            throw new BadRequestException('Invalid Request Object');
+            if (err.status ==  HttpStatus.FORBIDDEN) {
+                throw new HttpException('User already submitted the quiz!', HttpStatus.FORBIDDEN);
+            }
+            else {
+                throw new NotFoundException('Invalid Request Object');
+            }
         }
     }
 
