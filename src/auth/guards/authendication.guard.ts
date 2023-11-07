@@ -1,7 +1,7 @@
 import { ExecutionContext } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 
-export class AuthendicationGuard extends AuthGuard('google') {
+export class AuthenticationGuard extends AuthGuard('google') {
     constructor(){
         super({
             accessType: 'offline',
