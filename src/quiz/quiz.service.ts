@@ -228,6 +228,20 @@ export class QuizService {
         }
     }
 
+    async getQuiz(id: string) {
+        try {
+            return await this.prisma.quiz.findUnique({
+                where: {
+                    id: id
+                }
+            })
+
+        } catch (err) {
+            console.log(err);
+            throw new BadRequestException('Invalid Request Object')
+        }
+    }
+
     async toppers(data: any) {
         try {
 

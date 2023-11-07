@@ -18,6 +18,11 @@ export class QuizController {
         return this.quizeService.getAllQuizs(take, skip);
     }
 
+    @Get(':id')
+    async getQuiz(@Param('id') id: string) {
+        return this.quizeService.getQuiz(id);
+    }
+
     @Post('create')
     @UseInterceptors(FileInterceptor('file'))
     async createQuiz(@UploadedFile('file') file: Express.Multer.File, @Body() data: CreateQuizDto) {
