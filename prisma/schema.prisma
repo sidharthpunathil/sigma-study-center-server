@@ -34,6 +34,7 @@ model Quiz {
   heading     String?
   description String?
   multimedia  String?
+  score       Int @default(0)
   type        quizType
   optionText  optionText?
   optionMCQ   optionMCQ?

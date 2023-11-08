@@ -15,7 +15,15 @@ export class QuizService {
 
     async createQuiz(data: CreateQuizDto, file: Express.Multer.File): Promise<object> {
         try {
-            const { heading, description, type, mcqOptions, textOption, email } = data;
+            let { heading, description, type, mcqOptions, textOption, email, score } = data;
+ 
+            
+            if (typeof score === 'string') {
+                score = parseInt(score, 0);
+            } else if (typeof score === 'undefined') {
+                score = 0;
+            }
+
 
             const user = await this.userService.getUserByEmail(email);
 
@@ -34,6 +42,7 @@ export class QuizService {
                         heading,
                         description,
                         type,
+                        score,
                         multimedia: fileId.url
                     },
                 });
@@ -48,6 +57,7 @@ export class QuizService {
                         },
                         heading,
                         description,
+                        score,
                         type,
                     },
                 });
@@ -107,8 +117,6 @@ export class QuizService {
             throw new BadRequestException('Invalid Request Object');
         }
 
-
-
     }
 
 
@@ -151,7 +159,7 @@ export class QuizService {
             if (submission.quizId == answer.quizId) {
                 throw new HttpException('User already submitted the quiz!', HttpStatus.FORBIDDEN);
             }
-            
+
             return await this.prisma.summissions.create({
                 data: {
                     answer: answer.answer,
@@ -168,7 +176,7 @@ export class QuizService {
                 }
             })
         } catch (err) {
-            if (err.status ==  HttpStatus.FORBIDDEN) {
+            if (err.status == HttpStatus.FORBIDDEN) {
                 throw new HttpException('User already submitted the quiz!', HttpStatus.FORBIDDEN);
             }
             else {
@@ -214,6 +222,21 @@ export class QuizService {
         }
     }
 
+    async getAllSubmissionsToEvaluate(id: string, take: number, skip: number) {
+        try {
+            return await this.prisma.summissions.findMany({
+                where: {
+                    quizId: id,
+                    status: null
+                },
+                skip: +skip,
+                take: +take,
+            })
+        } catch (err) {
+            throw new BadRequestException('Invalid Request Object')
+        }
+    }
+
     async getAllSubmissions(id: string, take: number, skip: number) {
         try {
             return await this.prisma.summissions.findMany({
@@ -248,6 +271,48 @@ export class QuizService {
                     id: id
                 }
             })
+
+        } catch (err) {
+            console.log(err);
+            throw new BadRequestException('Invalid Request Object')
+        }
+    }
+
+    async getQuizStat(id: string) {
+        let pending = 0;
+        let correct = 0;
+        let incorrect = 0;
+
+        try {
+
+            const submissions = await this.prisma.summissions.findMany({
+                where: {
+                    quizId: id
+                }
+            })
+
+            submissions.find((submission) => {
+                if (submission.status == null) {
+                    pending += 1;
+                } else if (submission.status == true) {
+                    correct += 1;
+                } else if (submission.status == false) {
+                    incorrect += 1;
+                }
+            })
+
+            const total = submissions.length;
+            const evaluated = correct + incorrect;
+
+            console.log("stats", total, pending, correct, incorrect, evaluated)
+
+            return {
+                total,
+                pending,
+                correct,
+                incorrect,
+                evaluated
+            }
 
         } catch (err) {
             console.log(err);

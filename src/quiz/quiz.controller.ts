@@ -23,6 +23,11 @@ export class QuizController {
         return this.quizeService.getQuiz(id);
     }
 
+    @Get('stats')
+    async getQuizStat(@Param('id') id: string) {
+        return this.quizeService.getQuizStat(id);
+    }
+
     @Post('create')
     @UseInterceptors(FileInterceptor('file'))
     async createQuiz(@UploadedFile('file') file: Express.Multer.File, @Body() data: CreateQuizDto) {
@@ -42,6 +47,12 @@ export class QuizController {
     @Get('submissions/:id')
     async submissions(@Param('id') id: string, @Query("take") take: number, @Query("skip") skip: number) {
         return this.quizeService.getAllSubmissions(id, take, skip);
+    }
+    
+
+    @Get('evaluate/:id')
+    async getAllSubmissionsToEvaluate(@Param('id') id: string, @Query("take") take: number, @Query("skip") skip: number) {
+        return this.quizeService.getAllSubmissionsToEvaluate(id, take, skip);
     }
 
     @Get('toppers')

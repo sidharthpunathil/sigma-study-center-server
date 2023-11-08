@@ -3,6 +3,7 @@ export class EditQuizDto {
   heading?: string;
   description?: string;
   type?: 'mcq' | 'text';
+  score?: number;
   multimedia?: string;
   mcqOptions?: {
     a?: string;
