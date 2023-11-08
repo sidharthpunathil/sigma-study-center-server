@@ -1,4 +1,6 @@
 export class correctDto {
-    id: string
+    userId: string
+    submissionId: string
+    quizId: string
     status: boolean
 }

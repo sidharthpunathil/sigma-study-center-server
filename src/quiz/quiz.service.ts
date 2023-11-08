@@ -16,8 +16,8 @@ export class QuizService {
     async createQuiz(data: CreateQuizDto, file: Express.Multer.File): Promise<object> {
         try {
             let { heading, description, type, mcqOptions, textOption, email, score } = data;
- 
-            
+
+
             if (typeof score === 'string') {
                 score = parseInt(score, 0);
             } else if (typeof score === 'undefined') {
@@ -28,6 +28,8 @@ export class QuizService {
             const user = await this.userService.getUserByEmail(email);
 
             let quiz;
+
+            // User can decide to upload a file or not
 
             if (file) {
                 const fileId = file && await this.storageService.uploadFile(file)
@@ -63,8 +65,7 @@ export class QuizService {
                 });
             }
 
-            console.log("the user", user);
-
+            // It can be either mcq or text type questions
 
             if (type === 'mcq' && mcqOptions && user) {
 
@@ -119,7 +120,6 @@ export class QuizService {
 
     }
 
-
     async createMCQOption(mcqOptions: any, quizId: string): Promise<optionMCQ> {
         return this.prisma.optionMCQ.create({
             data: {
@@ -156,7 +156,7 @@ export class QuizService {
                 where: { userId: answer.userId },
             });
 
-            if (submission.quizId == answer.quizId) {
+            if (submission && submission.quizId == answer.quizId) {
                 throw new HttpException('User already submitted the quiz!', HttpStatus.FORBIDDEN);
             }
 
@@ -180,41 +180,84 @@ export class QuizService {
                 throw new HttpException('User already submitted the quiz!', HttpStatus.FORBIDDEN);
             }
             else {
+                console.log(err)
                 throw new NotFoundException('Invalid Request Object');
             }
         }
     }
+
+    // An optimization can be done here or a seperate endpoint 
+    // can be created to reduce the score of the user
 
     async correct(data: correctDto): Promise<Summissions> {
         try {
             if (data.status == true) {
                 const submission = await this.prisma.summissions.findUnique({
                     where: {
-                        id: data.id
+                        id: data.submissionId
                     }
                 })
 
-                console.log(submission)
+                const quiz = await this.prisma.quiz.findUnique({
+                    where: {
+                        id: data.quizId
+                    }
+                })
+
+                console.log("quiz", quiz);
+
+                const score = quiz.score
+
+                console.log("score to incremnet", score);
 
                 await this.prisma.user.update({
                     where: {
                         id: submission.userId
                     },
                     data: {
-                        score: { increment: 10 }
+                        score: { increment: score }
                     }
                 })
             }
 
+            // Condition to check if the submission is already evaluated, 
+            // and now we have to change the status also reduce the score 
+            // that was added when the submission was evaluated!
+
+            const submission = await this.prisma.summissions.findUnique({
+                where: {
+                    id: data.submissionId
+                }
+            })
+
+            if (data.status == false && submission.status == true) {
+
+                const currentQuiz = await this.prisma.quiz.findUnique({
+                    where: {
+                        id: submission.quizId
+                    }
+                })
+
+                const currentQuizScore = currentQuiz.score
+
+                await this.prisma.user.update({
+                    where: {
+                        id: submission.userId
+                    },
+                    data: {
+                        score: { decrement: currentQuizScore }
+                    }
+                })
+            } 
+
             return await this.prisma.summissions.update({
                 where: {
-                    id: data.id,
+                    id: data.submissionId,
                 },
                 data: {
                     status: data.status
                 },
             });
-
 
         } catch (err) {
             console.log(err);
@@ -313,7 +356,6 @@ export class QuizService {
                 incorrect,
                 evaluated
             }
-
         } catch (err) {
             console.log(err);
             throw new BadRequestException('Invalid Request Object')
