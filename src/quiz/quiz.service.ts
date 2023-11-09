@@ -280,14 +280,14 @@ export class QuizService {
         }
     }
 
-    async getAllSubmissions(id: string, take: number, skip: number) {
+    async getAllSubmissions(id: string, take?: number, skip?: number) {
         try {
             return await this.prisma.summissions.findMany({
                 where: {
                     quizId: id,
                 },
-                skip: +skip,
-                take: +take,
+                skip: skip ? +skip : undefined,
+                take: take ? +take : undefined,
             })
         } catch (err) {
             throw new BadRequestException('Invalid Request Object')
