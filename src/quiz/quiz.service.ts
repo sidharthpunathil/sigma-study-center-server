@@ -200,7 +200,7 @@ export class QuizService {
 
                 const quiz = await this.prisma.quiz.findUnique({
                     where: {
-                        id: data.quizId
+                        id: submission.quizId
                     }
                 })
 
@@ -265,15 +265,15 @@ export class QuizService {
         }
     }
 
-    async getAllSubmissionsToEvaluate(id: string, take: number, skip: number) {
+    async getAllSubmissionsToEvaluate(id: string, take?: number, skip?: number) {
         try {
             return await this.prisma.summissions.findMany({
                 where: {
                     quizId: id,
                     status: null
                 },
-                skip: +skip,
-                take: +take,
+                skip: skip ? +skip: undefined,
+                take: +take ? +take : undefined,
             })
         } catch (err) {
             throw new BadRequestException('Invalid Request Object')
@@ -294,13 +294,12 @@ export class QuizService {
         }
     }
 
-    async getAllQuizs(take: number, skip: number) {
+    async getAllQuizs(take?: number, skip?: number) {
         try {
             return await this.prisma.quiz.findMany({
-                skip: +skip,
-                take: +take,
+                skip: skip ? +skip : undefined,
+                take: take ? +take : undefined,
             })
-
         } catch (err) {
             console.log(err);
             throw new BadRequestException('Invalid Request Object')
