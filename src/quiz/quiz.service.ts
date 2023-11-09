@@ -361,16 +361,15 @@ export class QuizService {
         }
     }
 
-    async toppers(data: any) {
+    async toppers(take?: number, skip?: number): Promise<object> {
         try {
-
-            const topUsers = await this.prisma.user.findMany({
-                orderBy: {
-                    score: 'desc',
-                },
-                take: data.limit,
+            return await this.prisma.user.findMany({
+                // orderBy: {
+                //     score: 'desc',
+                // },
+                take: take ? +take : undefined,
+                skip: skip ? +skip : undefined,
             });
-            return topUsers;
 
         } catch (err) {
             throw new BadRequestException('Invalid Request Object')

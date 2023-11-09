@@ -12,16 +12,17 @@ import { EditQuizDto } from './dto/edit-quiz.dto';
 export class QuizController {
     constructor(private readonly quizeService: QuizService, private readonly storageService: StorageService) { }
 
+    @Get('toppers')
+    async toppers(@Query("take") take?: number, @Query("skip") skip?: number): Promise<object> {
+        return this.quizeService.toppers(take, skip);
+    }
+
 
     @Get('all')
     async allQuizes(@Query("take") take: number, @Query("skip") skip: number) {
         return this.quizeService.getAllQuizs(take, skip);
     }
 
-    @Get(':id')
-    async getQuiz(@Param('id') id: string) {
-        return this.quizeService.getQuiz(id);
-    }
 
     @Get('stats')
     async getQuizStat(@Param('id') id: string) {
@@ -48,17 +49,13 @@ export class QuizController {
     async submissions(@Param('id') id: string, @Query("take") take: number, @Query("skip") skip: number) {
         return this.quizeService.getAllSubmissions(id, take, skip);
     }
-    
+
 
     @Get('evaluate/:id')
     async getAllSubmissionsToEvaluate(@Param('id') id: string, @Query("take") take: number, @Query("skip") skip: number) {
         return this.quizeService.getAllSubmissionsToEvaluate(id, take, skip);
     }
 
-    @Get('toppers')
-    async toppers(@Body() data: any) {
-        return this.quizeService.toppers(data);
-    }
 
     @Put('edit')
     @UseInterceptors(FileInterceptor('file'))
@@ -70,4 +67,11 @@ export class QuizController {
     async deleteQuiz(@Body() data: deleteQuizDto) {
         return this.quizeService.deleteQuiz(data);
     }
+
+
+    @Get(':id')
+    async getQuiz(@Param('id') id: string) {
+        return this.quizeService.getQuiz(id);
+    }
+
 }
