@@ -1,28 +1,33 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Request, Redirect } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { RolesGuard } from './guards/role.guard';
 import { Roles } from './enum/role.enum';
 import { CustomRoles } from './decorator/roles.decorator';
 import { AuthenticationGuard } from './guards/authendication.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
-    @UseGuards(AuthenticationGuard)
+    // @UseGuards(AuthenticationGuard)
+    @UseGuards(AuthGuard('google'))
     @Get('google/login')
     handleLogin() {
         return true;
     }
 
+    @UseGuards(AuthGuard('google'))
     @Get('google/redirect')
-    @UseGuards(AuthenticationGuard)
-    handleRedirect() {
-        return { msg: 'OK' }
+    @Redirect('http://localhost:3001')
+    // @UseGuards(AuthenticationGuard)
+    async handleRedirect(@Req() req) {
+        return this.authService.validateUser(req)
     }
 
+    @UseGuards(GoogleAuthGuard)
     @Get('authtest')
     authTest() {
         return { msg: "authenticated" };

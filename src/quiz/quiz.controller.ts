@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, Param, Put, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, Put, Delete, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
 import { QuizService } from './quiz.service';
 import { correctDto } from './dto/correct.dto';
 import { answerQuizDto } from './dto/answer-quiz.dto';
@@ -7,6 +7,8 @@ import { deleteQuizDto } from './dto/delete-quiz.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService } from 'src/storage/storage.service';
 import { EditQuizDto } from './dto/edit-quiz.dto';
+import { Auth } from 'firebase-admin/lib/auth/auth';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('quiz')
 export class QuizController {
@@ -29,6 +31,7 @@ export class QuizController {
         return this.quizeService.getQuizStat(id);
     }
 
+    @UseGuards(AuthGuard('google'))
     @Post('create')
     @UseInterceptors(FileInterceptor('file'))
     async createQuiz(@UploadedFile('file') file: Express.Multer.File, @Body() data: CreateQuizDto) {
