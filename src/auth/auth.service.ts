@@ -26,17 +26,24 @@ export class AuthService {
   async validateUser(details: any, res?: any) {
     console.log("inside validate user 2", details.user);
     
-    let token;
+    let token, user;
 
     try {
-      const user = await this.userService.getUserByEmail(details.user.email)
+      user = await this.userService.getUserByEmail(details.user.email)
       console.log('auth user', user);
       token = await this.getToken(user.id, user.email, user.role)
     } catch (err) {
-      const user = await this.userService.createUser({ name: details.displayName, email: details.email })
+      user = await this.userService.createUser({ name: details.displayName, email: details.email })
       token = await this.getToken(user.id, user.email, user.role);
-
     }
+
+    // ![This is not the right way to do it]
+    // It should not be done like this, but for the sake of simplicity
+    // we are storing the user details in the cookie
+
+    res.cookie('user', user.id)
+    res.cookie('email', user.email)
+    res.cookie('role', user.role)
     res.cookie('access_token', token.access_token);
   }
 }

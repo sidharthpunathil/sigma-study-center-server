@@ -12,6 +12,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CustomRoles } from 'src/auth/decorator/roles.decorator';
 import { Roles } from 'src/auth/enum/role.enum';
 import { RolesGuard } from 'src/auth/guards/role.guard';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth-guard';
 
 @Controller('quiz')
 export class QuizController {
@@ -22,19 +23,17 @@ export class QuizController {
         return this.quizeService.toppers(take, skip);
     }
 
-
     @Get('all')
     async allQuizes(@Query("take") take: number, @Query("skip") skip: number) {
         return this.quizeService.getAllQuizs(take, skip);
     }
-
 
     @Get('stats')
     async getQuizStat(@Param('id') id: string) {
         return this.quizeService.getQuizStat(id);
     }
 
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @CustomRoles(Roles.admin)
     @Post('create')
     @UseInterceptors(FileInterceptor('file'))
@@ -44,11 +43,15 @@ export class QuizController {
         return true
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @CustomRoles(Roles.user)
     @Post('answer')
     async answer(@Body() data: answerQuizDto) {
         return this.quizeService.answerQuiz(data);
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @CustomRoles(Roles.admin)
     @Post('correct')
     async correct(@Body() data: correctDto) {
         return this.quizeService.correct(data);
