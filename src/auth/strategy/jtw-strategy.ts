@@ -5,18 +5,20 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(config: ConfigService) {
+  constructor(private configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: 'JWT_SECRET',
+      secretOrKey: configService.get<string>('Jwt.secret'),
+      signOptions: { expiresIn: configService.get<string>('Jwt.expiresIn') },
+
     });
   }
   validate(payload: any) {
     return {
-      id: payload.sub,
-      email: payload.email,
-      role: payload.role,
-  };
+      userId: payload.sub,
+      username: payload.email,
+      roles: payload.roles,
+    };
   }
 }

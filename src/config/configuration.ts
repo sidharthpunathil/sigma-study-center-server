@@ -18,6 +18,13 @@ export default () => ({
         messagingSenderId: process.env.FIREBASE_MESSAGINGSENDERID,
         appId: process.env.FIREBASE_APPID,
         measurementId: process.env.FIREBASE_MEASUREMENTID,
+    },
+    Jwt: {
+        secret: process.env.JWT_SECRET,
+        expiresIn: process.env.JWT_EXPIRESIN,
+    },
+    Misc: {
+        frontendUrl: process.env.FRONTEND_URL,
     }
   });
   

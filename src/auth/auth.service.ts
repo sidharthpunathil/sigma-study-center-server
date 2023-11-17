@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UserService, private jwt: JwtService,) { }
+  constructor(private readonly userService: UserService, private jwt: JwtService, private readonly configService: ConfigService) { }
 
   async getToken(
     userId: string,
@@ -13,14 +14,14 @@ export class AuthService {
     role: string
   ): Promise<{ access_token: string }> {
     const payload = { sub: userId, email, role };
-    const secret = 'JWT_SECRET';
+    const secret = this.configService.get<string>('Jwt.secret')
+    const expiresIn = this.configService.get<string>('Jwt.expiresIn')
     const token = await this.jwt.signAsync(payload, {
-      expiresIn: '15m',
+      expiresIn: expiresIn,
       secret: secret,
     });
     return { access_token: token };
   }
-
 
   async validateUser(details: any, res?: any) {
     console.log("inside validate user 2", details.user);
@@ -36,17 +37,6 @@ export class AuthService {
       token = await this.getToken(user.id, user.email, user.role);
 
     }
-
-    res.cookie('refresh_token', token.refreshToken);
     res.cookie('access_token', token.access_token);
-
   }
-
-  async findUser(email) {
-    const user = await this.userService.getUserByEmail(email);
-    console.log(user)
-    return user;
-  }
-
-
 }
