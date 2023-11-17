@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, Param, Put, Delete, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, Put, Delete, UseInterceptors, UploadedFile, UseGuards, Res, Req } from '@nestjs/common';
 import { QuizService } from './quiz.service';
 import { correctDto } from './dto/correct.dto';
 import { answerQuizDto } from './dto/answer-quiz.dto';
@@ -9,6 +9,9 @@ import { StorageService } from 'src/storage/storage.service';
 import { EditQuizDto } from './dto/edit-quiz.dto';
 import { Auth } from 'firebase-admin/lib/auth/auth';
 import { AuthGuard } from '@nestjs/passport';
+import { CustomRoles } from 'src/auth/decorator/roles.decorator';
+import { Roles } from 'src/auth/enum/role.enum';
+import { RolesGuard } from 'src/auth/guards/role.guard';
 
 @Controller('quiz')
 export class QuizController {
@@ -31,11 +34,14 @@ export class QuizController {
         return this.quizeService.getQuizStat(id);
     }
 
-    @UseGuards(AuthGuard('google'))
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @CustomRoles(Roles.admin)
     @Post('create')
     @UseInterceptors(FileInterceptor('file'))
-    async createQuiz(@UploadedFile('file') file: Express.Multer.File, @Body() data: CreateQuizDto) {
-        return this.quizeService.createQuiz(data, file);
+    async createQuiz(@Req() req, @UploadedFile('file') file: Express.Multer.File, @Body() data: CreateQuizDto) {
+        console.log(req.user.email, req.user.role, req.user)
+        // return this.quizeService.createQuiz(data, file);
+        return true
     }
 
     @Post('answer')

@@ -93,6 +93,4 @@ export class UserService {
             throw new ConflictException("Error changing username");
         }
     }
-
-
 }
