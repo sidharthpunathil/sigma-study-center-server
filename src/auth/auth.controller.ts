@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Request, Redirect, Res, InternalServerErrorException, Session } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { RolesGuard } from './guards/role.guard';
 import { Roles } from './enum/role.enum';
 import { CustomRoles } from './decorator/roles.decorator';
 import { AuthenticationGuard } from './guards/authendication.guard';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from './guards/jwt-auth-guard';
 
 
 @Controller('auth')
@@ -14,18 +15,32 @@ export class AuthController {
     @UseGuards(AuthenticationGuard)
     @Get('google/login')
     handleLogin() {
-        return true;
     }
 
-    @Get('google/redirect')
     @UseGuards(AuthenticationGuard)
-    handleRedirect() {
-        return { msg: 'OK' }
+    @Get('google/redirect')
+    @Redirect('http://localhost:3001')
+    async handleRedirect(@Req() req, @Res({ passthrough: true }) res) {
+        try {
+           return await this.authService.validateUser(req, res);
+        } catch (error) {
+            console.error(error);
+            throw new InternalServerErrorException('Internal Server Error');
+        }
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @CustomRoles(Roles.user)
     @Get('authtest')
     authTest() {
-        return { msg: "authenticated" };
+        return "haha";
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('test2')
+    test2(@Req() req) {
+        console.log(req.user);
+       return "haha";
     }
 
     @Get('status')
@@ -41,7 +56,7 @@ export class AuthController {
 
 
     @Get('user')
-    @UseGuards(GoogleAuthGuard, RolesGuard)
+    @UseGuards(RolesGuard)
     @CustomRoles(Roles.user)
     protectedEndpoint3() {
         return 'This is a protected endpoint!';
@@ -49,7 +64,7 @@ export class AuthController {
 
 
     @Get('admin')
-    @UseGuards(GoogleAuthGuard, RolesGuard)
+    @UseGuards(RolesGuard)
     @CustomRoles(Roles.admin)
     protectedEndpoint2() {
         return 'This is a protected endpoint!';

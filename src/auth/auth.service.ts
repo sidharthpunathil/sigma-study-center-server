@@ -1,28 +1,52 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
+import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly userService: UserService){}
+  constructor(private readonly userService: UserService, private jwt: JwtService,) { }
 
-    async validateUser(details: any) {
-        console.log(details);
-        const user = await this.userService.getUserByEmail(details.email)
-        console.log('auth user', user);
-        if (user) return user;
+  async getToken(
+    userId: string,
+    email: string,
+    role: string
+  ): Promise<{ access_token: string }> {
+    const payload = { sub: userId, email, role };
+    const secret = 'JWT_SECRET';
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: '15m',
+      secret: secret,
+    });
+    return { access_token: token };
+  }
 
-        if(!user) {
-            console.log("insid !user")
-            const user = await this.userService.createUser({name: details.displayName, email: details.email})
-            if (user) return true
-        }
+
+  async validateUser(details: any, res?: any) {
+    console.log("inside validate user 2", details.user);
+    
+    let token;
+
+    try {
+      const user = await this.userService.getUserByEmail(details.user.email)
+      console.log('auth user', user);
+      token = await this.getToken(user.id, user.email, user.role)
+    } catch (err) {
+      const user = await this.userService.createUser({ name: details.displayName, email: details.email })
+      token = await this.getToken(user.id, user.email, user.role);
+
     }
 
-    async findUser(email) {
-        const user = await this.userService.getUserByEmail(email);
-        console.log(user)
-        return user;
-    }
+    res.cookie('refresh_token', token.refreshToken);
+    res.cookie('access_token', token.access_token);
+
+  }
+
+  async findUser(email) {
+    const user = await this.userService.getUserByEmail(email);
+    console.log(user)
+    return user;
+  }
 
 
 }

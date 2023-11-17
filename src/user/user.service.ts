@@ -20,6 +20,7 @@ export class UserService {
     }
 
     async getUserByEmail(email: string): Promise<User | null> {
+        console.log('email', email)
         const user = await this.prisma.user.findUnique({
             where: {
                 email: email,
@@ -27,7 +28,6 @@ export class UserService {
         });
         if (!user) {
             return null
-            // throw new Error(`User with email ${email} not found.`);
         }
         return user;
     }
@@ -93,6 +93,4 @@ export class UserService {
             throw new ConflictException("Error changing username");
         }
     }
-
-
 }

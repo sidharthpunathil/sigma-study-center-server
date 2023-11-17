@@ -1,4 +1,3 @@
-import { ExecutionContext } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 
 export class AuthenticationGuard extends AuthGuard('google') {
@@ -6,11 +5,5 @@ export class AuthenticationGuard extends AuthGuard('google') {
         super({
             accessType: 'offline',
           });
-    }
-    async canActivate(context: ExecutionContext) {
-        const activate = await super.canActivate(context) as boolean;
-        const request = context.switchToHttp().getRequest()
-        await super.logIn(request);
-        return activate
     }
 }
