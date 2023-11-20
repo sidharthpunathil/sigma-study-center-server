@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
@@ -23,17 +23,22 @@ export class AuthService {
     return { access_token: token };
   }
 
-  async validateUser(details: any, res?: any) {
-    console.log("inside validate user 2", details.user);
+  async validateUser(req: any, res?: any) {
+    console.log("inside validate user 2", req.user);
     
     let token, user;
 
     try {
-      user = await this.userService.getUserByEmail(details.user.email)
-      console.log('auth user', user);
-      token = await this.getToken(user.id, user.email, user.role)
+      user = await this.userService.getUserByEmail(req.user.email)
+      if (user) {
+        token = await this.getToken(user.id, user.email, user.role)
+      } else {
+        throw new NotFoundException('User not found');
+      }
+
     } catch (err) {
-      user = await this.userService.createUser({ name: details.displayName, email: details.email })
+      console.log(err)
+      user = await this.userService.createUser({ name: req.user.name, email: req.user.email })
       token = await this.getToken(user.id, user.email, user.role);
     }
 

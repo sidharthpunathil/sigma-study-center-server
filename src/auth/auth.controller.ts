@@ -6,28 +6,29 @@ import { CustomRoles } from './decorator/roles.decorator';
 import { AuthenticationGuard } from './guards/authendication.guard';
 import { JwtAuthGuard } from './guards/jwt-auth-guard';
 import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '@nestjs/passport';
 
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService, private readonly configService: ConfigService) { }
 
-    @UseGuards(AuthenticationGuard)
+    @UseGuards(AuthGuard('google'))
     @Get('google/login')
     handleLogin() {
     }
 
-    @UseGuards(AuthenticationGuard)
+    @UseGuards(AuthGuard('google'))
     @Get('google/redirect')
     @Redirect()
     async handleRedirect(@Req() req, @Res({ passthrough: true }) res) {
+        const redirectUrl = await this.configService.get<string>('Misc.frontendUrl');
         try {
-        await this.authService.validateUser(req, res);
-           const redirectUrl = await this.configService.get<string>('Misc.frontendUrl');
-           return { url: redirectUrl };
+            await this.authService.validateUser(req, res);
+            return { url: redirectUrl };
         } catch (error) {
             console.error(error);
-            throw new InternalServerErrorException('Internal Server Error');
+            return { url: redirectUrl };
         }
     }
 
