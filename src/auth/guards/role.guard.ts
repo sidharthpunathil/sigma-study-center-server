@@ -18,6 +18,8 @@ export class RolesGuard implements CanActivate {
 
     // It is role in prisma schema [so we can only look for on role at a time]
 
+    console.log(user)
+
     return roles.some(role => user.role.includes(role)); 
   }
 }

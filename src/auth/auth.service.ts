@@ -37,8 +37,7 @@ export class AuthService {
       }
 
     } catch (err) {
-      console.log(err)
-      user = await this.userService.createUser({ name: req.user.name, email: req.user.email })
+      user = await this.userService.createUser({ name: req.user.name, email: req.user.email})
       token = await this.getToken(user.id, user.email, user.role);
     }
 

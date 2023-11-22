@@ -7,8 +7,6 @@ import { deleteQuizDto } from './dto/delete-quiz.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService } from 'src/storage/storage.service';
 import { EditQuizDto } from './dto/edit-quiz.dto';
-import { Auth } from 'firebase-admin/lib/auth/auth';
-import { AuthGuard } from '@nestjs/passport';
 import { CustomRoles } from 'src/auth/decorator/roles.decorator';
 import { Roles } from 'src/auth/enum/role.enum';
 import { RolesGuard } from 'src/auth/guards/role.guard';
@@ -38,9 +36,8 @@ export class QuizController {
     @Post('create')
     @UseInterceptors(FileInterceptor('file'))
     async createQuiz(@Req() req, @UploadedFile('file') file: Express.Multer.File, @Body() data: CreateQuizDto) {
-        console.log(req.user.email, req.user.role, req.user)
-        // return this.quizeService.createQuiz(data, file);
-        return true
+        console.log("createfromhere", req.user.email, req.user.role, req.user)
+        return this.quizeService.createQuiz(data, file);
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)

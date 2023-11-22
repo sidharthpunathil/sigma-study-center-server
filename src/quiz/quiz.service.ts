@@ -27,6 +27,8 @@ export class QuizService {
 
             const user = await this.userService.getUserByEmail(email);
 
+            console.log('the user is ', user);
+
             let quiz;
 
             // User can decide to upload a file or not
@@ -311,6 +313,10 @@ export class QuizService {
             return await this.prisma.quiz.findUnique({
                 where: {
                     id: id
+                },
+                include: {
+                    optionMCQ: true,
+                    optionText: true
                 }
             })
 

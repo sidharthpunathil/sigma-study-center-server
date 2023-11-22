@@ -7,18 +7,19 @@ import { AuthenticationGuard } from './guards/authendication.guard';
 import { JwtAuthGuard } from './guards/jwt-auth-guard';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
+import { Auth } from 'firebase-admin/lib/auth/auth';
 
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService, private readonly configService: ConfigService) { }
 
-    @UseGuards(AuthGuard('google'))
+    @UseGuards(AuthenticationGuard)
     @Get('google/login')
     handleLogin() {
     }
 
-    @UseGuards(AuthGuard('google'))
+    @UseGuards(AuthenticationGuard)
     @Get('google/redirect')
     @Redirect()
     async handleRedirect(@Req() req, @Res({ passthrough: true }) res) {

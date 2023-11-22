@@ -39,14 +39,15 @@ export class UserService {
             throw new ConflictException('Name and email are required fields.');
         }
 
-        const role = Roles.user;
-
         try {
             const prismaCreateInput: Prisma.UserCreateInput = {
                 name,
                 email,
-                role: role as Roles,
+                role: Roles.user
             };
+
+
+            console.log("going to create a user" ,prismaCreateInput)
 
             return await this.prisma.user.create({
                 data: prismaCreateInput,
