@@ -142,7 +142,7 @@ export class QuizService {
     async createTextOption(textOption: any, quizId: string): Promise<optionText> {
         return this.prisma.optionText.create({
             data: {
-                text: textOption.text,
+                text: textOption,
                 quiz: {
                     connect: {
                         id: quizId,
@@ -491,7 +491,7 @@ export class QuizService {
                 if (existingType == 'text') {
                     console.log("existing type is text")
 
-                    console.log("textoption", textOption.text);
+                    console.log("textoption", textOption);
                     console.log("textoption", textOption)
 
                     await this.prisma.quiz.update({
