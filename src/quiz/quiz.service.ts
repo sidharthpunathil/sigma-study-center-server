@@ -536,7 +536,7 @@ export class QuizService {
                             },
                             data: {
                                 optionText: {
-                                    create: {
+                                    update: {
                                         text: textOption,
                                     },
                                 },
