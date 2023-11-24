@@ -8,6 +8,7 @@ import { deleteQuizDto } from './dto/delete-quiz.dto';
 import { StorageService } from 'src/storage/storage.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { EditQuizDto } from './dto/edit-quiz.dto';
+import { text } from 'stream/consumers';
 
 @Injectable()
 export class QuizService {
@@ -250,7 +251,7 @@ export class QuizService {
                         score: { decrement: currentQuizScore }
                     }
                 })
-            } 
+            }
 
             return await this.prisma.summissions.update({
                 where: {
@@ -274,7 +275,7 @@ export class QuizService {
                     quizId: id,
                     status: null
                 },
-                skip: skip ? +skip: undefined,
+                skip: skip ? +skip : undefined,
                 take: +take ? +take : undefined,
             })
         } catch (err) {
@@ -382,19 +383,185 @@ export class QuizService {
         }
     }
 
-    async editQuiz(data: EditQuizDto, file: Express.Multer.File): Promise<object> {
-        const { quizId, ...query } = data
-        if (file) {
-            const fileUpload = await this.storageService.uploadFile(file);
+    async editQuiz(data: EditQuizDto, multimedia: Express.Multer.File): Promise<object> {
+
+        const exisitingQuiz = await this.prisma.quiz.findUnique({
+            where: {
+                id: data.quizId
+            },
+            include: {
+                optionMCQ: true,
+                optionText: true
+            }
+        })
+
+        console.log(exisitingQuiz.optionMCQ, "exisitingQuiz.optionMCQ")
+
+        const mcqStatus = exisitingQuiz.optionMCQ ? true : false
+        const textStatus = exisitingQuiz.optionText ? true : false
+
+        console.log(exisitingQuiz, "exisitingQuiz")
+        console.log(data, "currentData")
+
+        console.log(data, "data i am receiving");
+        const { quizId, mcqOptions, textOption, ...query } = data
+        console.log(query, "query i am receiving")
+        console.log(mcqOptions, "mcq i am receiving")
+        console.log(textOption, "text i am receiving")
+        console.log(quizId, "quizId i am receiving")
+
+        const score = query.score
+        query.score = +score;
+        const type = query.type
+
+        const existingType = exisitingQuiz.type
+
+        if (multimedia) {
+            const fileUpload = await this.storageService.uploadFile(multimedia);
             query.multimedia = fileUpload.url
         }
+
         try {
+            if (type === 'mcq' && mcqOptions) {
+                console.log("current type is mcq")
+                if (existingType == 'mcq') {
+                    console.log("exisiting type is mcq")
+                    await this.prisma.quiz.update({
+                        where: {
+                            id: quizId,
+                        },
+                        data: {
+                            optionMCQ: {
+                                update: {
+                                    a: mcqOptions.a,
+                                    b: mcqOptions.b,
+                                    c: mcqOptions.c,
+                                    d: mcqOptions.d
+                                },
+                            },
+                        },
+                        include: {
+                            optionMCQ: true,
+                        },
+                    });
+                } else if (existingType == 'text') {
+                    const createdMCQOption = await this.createMCQOption(mcqOptions, quizId);
+
+                    if (!mcqStatus) {
+                        await this.prisma.quiz.update({
+                            where: {
+                                id: quizId,
+                            },
+                            data: {
+                                optionMCQ: {
+                                    connect: {
+                                        id: createdMCQOption.id,
+                                    },
+                                },
+                            },
+                            include: {
+                                optionMCQ: true,
+                            },
+                        });
+                    } else {
+                        await this.prisma.quiz.update({
+                            where: {
+                                id: quizId,
+                            },
+                            data: {
+                                optionMCQ: {
+                                    create: {
+                                        a: mcqOptions.a,
+                                        b: mcqOptions.b,
+                                        c: mcqOptions.c,
+                                        d: mcqOptions.d
+                                    },
+                                },
+                            },
+                            include: {
+                                optionMCQ: true,
+                            },
+                        });
+                    }
+                }
+
+            } else if (type == 'text' && textOption) {
+                console.log("current type is text")
+                console.log("texteee")
+                if (existingType == 'text') {
+                    console.log("existing type is text")
+
+                    console.log("textoption", textOption)
+                    console.log("textoption", textOption)
+
+                    await this.prisma.quiz.update({
+                        where: {
+                            id: quizId,
+                        },
+                        data: {
+                            optionText: {
+                                update: {
+                                    text: textOption,
+                                },
+                            },
+                        },
+                        include: {
+                            optionText: true,
+                        },
+                    });
+
+                } else if (existingType == 'mcq') {
+
+                    const createTextOption = await this.createTextOption(textOption, quizId);
+
+                    if (!textStatus) {
+                        await this.prisma.quiz.update({
+                            where: {
+                                id: quizId,
+                            },
+                            data: {
+                                optionText: {
+                                    connect: {
+                                        id: createTextOption.id,
+                                    },
+                                },
+                            },
+                            include: {
+                                optionText: true,
+                            },
+                        });
+                    } else {
+                        await this.prisma.quiz.update({
+                            where: {
+                                id: quizId,
+                            },
+                            data: {
+                                optionText: {
+                                    create: {
+                                        text: textOption,
+                                    },
+                                },
+                            },
+                            include: {
+                                optionText: true,
+                            },
+                        });
+                    }
+                }
+            }
+
+            console.log('\n\n\n\the query\n\n\n\n', query);
+            console.warn('wowwowowowa', query)
 
             return await this.prisma.quiz.update({
                 where: {
-                    id: quizId
+                    id: quizId,
                 },
-                data: query
+                data: query,
+                include: {
+                    optionMCQ: true,
+                    optionText: true
+                }
             });
         }
 
@@ -405,6 +572,9 @@ export class QuizService {
     }
 
     async deleteQuiz(data: deleteQuizDto) {
+
+        console.log(data, "data i am receiving");
+
         try {
             await this.prisma.quiz.delete({
                 where: { id: data.quizId },
@@ -413,7 +583,7 @@ export class QuizService {
             return `quiz ${data.quizId} deleted successfully!`
         } catch (err) {
             console.log(err)
-            throw new Error(`Failed to delete quiz with ID ${data.quizId}: ${err.message}`);
+            return new Error(`Failed to delete quiz with ID ${data.quizId}: ${err.message}`);
         }
     }
 }
