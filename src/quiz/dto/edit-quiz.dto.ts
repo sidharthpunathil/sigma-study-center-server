@@ -11,6 +11,6 @@ export class EditQuizDto {
     c?: string;
     d?: string;
   };
-  textOption?: string;
+  textOption?: any;
   // email?: string;
 }

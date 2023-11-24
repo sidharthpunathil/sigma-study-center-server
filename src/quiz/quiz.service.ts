@@ -445,9 +445,9 @@ export class QuizService {
                         },
                     });
                 } else if (existingType == 'text') {
-                    const createdMCQOption = await this.createMCQOption(mcqOptions, quizId);
 
                     if (!mcqStatus) {
+                        const createdMCQOption = await this.createMCQOption(mcqOptions, quizId);
                         await this.prisma.quiz.update({
                             where: {
                                 id: quizId,
@@ -470,7 +470,7 @@ export class QuizService {
                             },
                             data: {
                                 optionMCQ: {
-                                    create: {
+                                    update: {
                                         a: mcqOptions.a,
                                         b: mcqOptions.b,
                                         c: mcqOptions.c,
@@ -491,7 +491,7 @@ export class QuizService {
                 if (existingType == 'text') {
                     console.log("existing type is text")
 
-                    console.log("textoption", textOption)
+                    console.log("textoption", textOption.text);
                     console.log("textoption", textOption)
 
                     await this.prisma.quiz.update({
@@ -512,9 +512,8 @@ export class QuizService {
 
                 } else if (existingType == 'mcq') {
 
-                    const createTextOption = await this.createTextOption(textOption, quizId);
-
                     if (!textStatus) {
+                        const createTextOption = await this.createTextOption(textOption, quizId);
                         await this.prisma.quiz.update({
                             where: {
                                 id: quizId,
