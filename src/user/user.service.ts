@@ -15,7 +15,7 @@ export class UserService {
                 id: id
             }
         });
-        console.log(user)
+        console.log("user found from here", user)
         return user;
     }
 

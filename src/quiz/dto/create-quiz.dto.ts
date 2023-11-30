@@ -17,5 +17,5 @@ export class CreateQuizDto {
     d: string;
   };
   textOption?: string;
-  email: string;
+  id: string;
 }

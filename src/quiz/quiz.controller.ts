@@ -31,24 +31,22 @@ export class QuizController {
         return this.quizeService.getQuizStat(id);
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @CustomRoles(Roles.admin)
     @Post('create')
     @UseInterceptors(FileInterceptor('file'))
     async createQuiz(@Req() req, @UploadedFile('file') file: Express.Multer.File, @Body() data: CreateQuizDto) {
-        console.log("createfromhere", req.user.email, req.user.role, req.user)
+        console.log(data, "data");
         return this.quizeService.createQuiz(data, file);
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @CustomRoles(Roles.user)
+    // @UseGuards(JwtAuthGuard, RolesGuard)
+    // @CustomRoles(Roles.user)
     @Post('answer')
     async answer(@Body() data: answerQuizDto) {
         return this.quizeService.answerQuiz(data);
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @CustomRoles(Roles.admin)
+    // @UseGuards(JwtAuthGuard, RolesGuard)
+    // @CustomRoles(Roles.admin)
     @Post('correct')
     async correct(@Body() data: correctDto) {
         return this.quizeService.correct(data);

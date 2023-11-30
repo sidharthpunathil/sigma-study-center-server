@@ -8,7 +8,6 @@ import { deleteQuizDto } from './dto/delete-quiz.dto';
 import { StorageService } from 'src/storage/storage.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { EditQuizDto } from './dto/edit-quiz.dto';
-import { text } from 'stream/consumers';
 
 @Injectable()
 export class QuizService {
@@ -16,7 +15,7 @@ export class QuizService {
 
     async createQuiz(data: CreateQuizDto, file: Express.Multer.File): Promise<object> {
         try {
-            let { heading, description, type, mcqOptions, textOption, email, score } = data;
+            let { heading, description, type, mcqOptions, textOption, id, score } = data;
 
 
             if (typeof score === 'string') {
@@ -26,7 +25,7 @@ export class QuizService {
             }
 
 
-            const user = await this.userService.getUserByEmail(email);
+            const user = await this.userService.findUserById(id);
 
             console.log('the user is ', user);
 
@@ -410,7 +409,7 @@ export class QuizService {
         console.log(textOption, "text i am receiving")
         console.log(quizId, "quizId i am receiving")
 
-        const score = query.score
+        const score = query.score ? query.score : 0
         query.score = +score;
         const type = query.type
 
