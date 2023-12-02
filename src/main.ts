@@ -15,6 +15,6 @@ async function bootstrap() {
 
   app.enableCors();
   app.use(passport.initialize());
-  await app.listen(3000);
+  await app.listen(3000, '192.168.1.7');
 }
 bootstrap();

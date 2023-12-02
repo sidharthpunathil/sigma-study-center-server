@@ -8,6 +8,8 @@ import { deleteQuizDto } from './dto/delete-quiz.dto';
 import { StorageService } from 'src/storage/storage.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { EditQuizDto } from './dto/edit-quiz.dto';
+import { map, from } from 'rxjs';
+
 
 @Injectable()
 export class QuizService {
@@ -296,17 +298,42 @@ export class QuizService {
         }
     }
 
-    async getAllQuizs(take?: number, skip?: number) {
+    async getAllQuizs(take?: number, skip?: number): Promise<any> {
         try {
-            return await this.prisma.quiz.findMany({
-                skip: skip ? +skip : undefined,
-                take: take ? +take : undefined,
-            })
+          const quizzes = await this.prisma.quiz.findMany({
+            skip: skip ? +skip : undefined,
+            take: take ? +take : undefined,
+            include: {
+              submissions: true,
+            },
+          });
+      
+          const quizzesWithStatus = quizzes.map((quiz) => {
+
+            const submissionStatuses = quiz.submissions.map((submission) => submission.status);
+            const correct = submissionStatuses.filter((status) => status === true).length;
+            const incorrect = submissionStatuses.filter((status) => status === false).length;
+            const pending = submissionStatuses.filter((status) => status === null).length;
+      
+            const { submissions, ...quizWithoutSubmissions } = quiz;
+
+            return {
+              ...quizWithoutSubmissions,
+              status: {
+                correct,
+                incorrect,
+                pending,
+              },
+            };
+          });
+      
+          return quizzesWithStatus;
+         
         } catch (err) {
-            console.log(err);
-            throw new BadRequestException('Invalid Request Object')
+          console.log(err);
+          throw new BadRequestException('Invalid Request Object');
         }
-    }
+      }
 
     async getQuiz(id: string) {
         try {
